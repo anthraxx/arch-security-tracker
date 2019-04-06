@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from flask import redirect
 from flask import render_template
+from flask import flash
 from flask_login import current_user
 from jinja2.utils import escape
 from sqlalchemy import and_
@@ -18,12 +19,15 @@ from tracker.advisory import advisory_escape_html
 from tracker.advisory import advisory_extend_html
 from tracker.advisory import advisory_format_issue_listing
 from tracker.form.advisory import AdvisoryForm
+from tracker.form.review import ReviewForm
 from tracker.model import CVE
 from tracker.model import Advisory
 from tracker.model import CVEGroup
 from tracker.model import CVEGroupEntry
 from tracker.model import CVEGroupPackage
 from tracker.model import Package
+from tracker.model import Review
+from tracker.model import User
 from tracker.model.advisory import advisory_regex
 from tracker.model.cve import cve_id_regex
 from tracker.model.cvegroup import pkgname_regex
@@ -442,13 +446,17 @@ def show_package(pkgname):
                            package=data)
 
 
-def render_html_advisory(advisory, package, group, raw_asa, generated):
+def render_html_advisory(advisory, package, group, raw_asa, generated, form=None, reviews=[]):
     return render_template('advisory.html',
                            title='[{}] {}: {}'.format(advisory.id, package.pkgname, advisory.advisory_type),
                            advisory=advisory,
                            package=package,
                            raw_asa=raw_asa,
                            generated=generated,
+                           current_user=current_user,
+                           form=form,
+                           reviews=reviews,
+                           Review=Review,
                            can_handle_advisory=user_can_handle_advisory(),
                            Publication=Publication)
 
@@ -505,8 +513,8 @@ def show_advisory(advisory_id, raw=False):
     return render_html_advisory(advisory=advisory, package=package, group=group, raw_asa=asa, generated=False)
 
 
-@tracker.route('/advisory/<regex("{}"):advisory_id>/generate'.format(advisory_regex[1:-1]), methods=['GET'])
-@tracker.route('/<regex("{}"):advisory_id>/generate'.format(advisory_regex[1:-1]), methods=['GET'])
+@tracker.route('/advisory/<regex("{}"):advisory_id>/generate'.format(advisory_regex[1:-1]), methods=['GET', 'POST'])
+@tracker.route('/<regex("{}"):advisory_id>/generate'.format(advisory_regex[1:-1]), methods=['GET', 'POST'])
 def show_generated_advisory(advisory_id, raw=False):
     entries = (db.session.query(Advisory, CVEGroup, CVEGroupPackage, CVE)
                .filter(Advisory.id == advisory_id)
@@ -520,6 +528,32 @@ def show_generated_advisory(advisory_id, raw=False):
         return not_found()
 
     advisory = entries[0][0]
+
+    form = ReviewForm()
+    review = (db.session.query(Review, Advisory, User)
+               .filter(Advisory.id == advisory_id)
+               .filter(User.id == current_user.id)
+               .join(Advisory).join(User)).first()
+    if not form.is_submitted() and review:
+        form.note.data = review[0].note
+    if form.is_submitted():
+        if not form.validate_on_submit():
+            flash("Need to write feedback to disapprove", 'warning')
+            return redirect('/{}/generate'.format(advisory.id))
+        if review:
+            db.session.delete(review[0])
+            db.session.commit()
+        db.create(Review,
+                approved=form.approve.data,
+                advisory=advisory,
+                user=current_user,
+                note=form.note.data)
+        flash("Added review!")
+
+    reviews = (db.session.query(Review, Advisory, User)
+               .filter(Advisory.id == advisory_id)
+               .join(Advisory).join(User)).all()
+    all_reviews = [review for (review, advisory, user) in reviews]
     group = entries[0][1]
     package = entries[0][2]
     issues = sorted([issue for (advisory, group, package, issue) in entries])
@@ -568,4 +602,5 @@ def show_generated_advisory(advisory_id, raw=False):
     raw_asa = '\n'.join(raw_asa.split('\n')[2:])
     raw_asa = str(escape(raw_asa))
     raw_asa = advisory_extend_html(raw_asa, issues, package)
-    return render_html_advisory(advisory=advisory, package=package, group=group, raw_asa=raw_asa, generated=True)
+    return render_html_advisory(advisory=advisory, package=package, group=group, raw_asa=raw_asa, generated=True,
+            form=form, reviews=all_reviews)

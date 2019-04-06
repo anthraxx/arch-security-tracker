@@ -17,18 +17,48 @@
 				{%- endif %}
 				<a href="/{{  advisory.id }}/{% if generated %}generate/{% endif %}raw" accesskey="r">raw</a>
 			</h1>
-			<table class="styled-table full size">
-				<thead>
-					<tr>
-						<th>[{{ advisory.id }}] {{package.pkgname}}: {{advisory.advisory_type}}</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>
-							<div class='advisory'>{{ raw_asa|safe|urlize }}</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+			<div class="row">
+				<div class="one-half column">
+					<table class="styled-table full size">
+						<thead>
+							<tr>
+								<th>[{{ advisory.id }}] {{package.pkgname}}: {{advisory.advisory_type}}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<div class='advisory'>{{ raw_asa|safe|urlize }}</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				{%- if current_user.is_authenticated and form %}
+				<div class="one-half column">
+					<table class="styled-table full size">
+						<thead>
+							<tr>
+								<th>Advisory reviews</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for review in reviews %}
+							<tr>
+								<td>{{review.user.name}} - {%- if review.approved %} <span class="green">Approved</span> {%- else %} <span class="red">Disapproved</span> {%- endif %} - {{review.note}}</td>
+							</tr>
+							{%- endfor %}
+						</tbody>
+					</table>
+
+				<form action="{{ action }}" method="post" name="add">
+					{{ form.hidden_tag() }}
+					{{ render_field(form.note, class='full size', maxlength=Review.NOTE_LENGTH, placeholder='Feedback...') }}
+					{{ form.approve(class='button-primary', accesskey='a') }}
+					{{ form.revoke(class='button-primary', accesskey='d') }}
+				</form>
+				</div>
+				{%- endif %}
+			</div>
 {%- endblock %}
