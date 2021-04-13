@@ -8,6 +8,7 @@ email_validator
 requests
 scrypt
 pyalpm
+sqlalchemy==1.3
 SQLAlchemy-Continuum
 feedgen
 pytz
