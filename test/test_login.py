@@ -51,7 +51,7 @@ def test_login_disabled(db, client):
 def test_login_logged_in_redirect(db, client):
     resp = client.post(url_for('tracker.login'), follow_redirects=False)
     assert 302 == resp.status_code
-    assert resp.location.endswith('/')
+    assert resp.location.endswith('/issues')
 
 
 @logged_in
@@ -63,4 +63,4 @@ def test_logout(db, client):
 def test_logout_not_logged_in(db, client):
     resp = client.post(url_for('tracker.logout'), follow_redirects=False)
     assert 302 == resp.status_code
-    assert resp.location.endswith('/')
+    assert resp.location.endswith('/issues')

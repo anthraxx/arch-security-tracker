@@ -8,14 +8,6 @@ from .conftest import create_package
 
 
 @create_package(name='foo', version='1.2.3-4')
-@create_group(id=DEFAULT_GROUP_ID, packages=['foo'], affected='1.2.3-3', fixed='1.2.3-4')
-def test_index(db, client):
-    resp = client.get(url_for('tracker.index'), follow_redirects=True)
-    assert 200 == resp.status_code
-    assert DEFAULT_GROUP_NAME not in resp.data.decode()
-
-
-@create_package(name='foo', version='1.2.3-4')
 @create_group(id=DEFAULT_GROUP_ID, packages=['foo'], affected='1.2.3-3')
 def test_index_vulnerable(db, client):
     resp = client.get(url_for('tracker.index_vulnerable'), follow_redirects=True)

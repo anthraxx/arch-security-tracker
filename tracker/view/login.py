@@ -18,7 +18,7 @@ from tracker.user import user_invalidate
 @tracker.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('tracker.index'))
+        return redirect(url_for('tracker.index_vulnerable'))
 
     form = LoginForm()
     if not form.validate_on_submit():
@@ -33,14 +33,14 @@ def login():
     user = user_assign_new_token(form.user)
     user.is_authenticated = True
     login_user(user)
-    return redirect(url_for('tracker.index'))
+    return redirect(url_for('tracker.index_vulnerable'))
 
 
 @tracker.route('/logout', methods=['GET', 'POST'])
 def logout():
     if not current_user.is_authenticated:
-        return redirect(url_for('tracker.index'))
+        return redirect(url_for('tracker.index_vulnerable'))
 
     user_invalidate(current_user)
     logout_user()
-    return redirect(url_for('tracker.index'))
+    return redirect(url_for('tracker.index_vulnerable'))

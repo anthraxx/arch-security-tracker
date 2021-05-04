@@ -5,6 +5,7 @@ from .copy import *
 from .delete import *
 from .edit import *
 from .error import *
+from .home import *
 from .index import *
 from .login import *
 from .show import *
