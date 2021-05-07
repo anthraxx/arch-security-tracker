@@ -35,6 +35,7 @@ TRACKER_PASSWORD_LENGTH_MIN = config_tracker.getint('password_length_min')
 TRACKER_PASSWORD_LENGTH_MAX = config_tracker.getint('password_length_max')
 TRACKER_SUMMARY_LENGTH_MAX = config_tracker.getint('summary_length_max')
 TRACKER_LOG_ENTRIES_PER_PAGE = config_tracker.getint('log_entries_per_page')
+TRACKER_ISSUES_PER_PAGE = config_tracker.getint('issues_per_page')
 
 config_sqlite = config['sqlite']
 SQLITE_JOURNAL_MODE = config_sqlite['journal_mode']

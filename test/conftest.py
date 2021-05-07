@@ -7,6 +7,7 @@ import pytest
 from flask import url_for
 from flask_login import current_user
 
+import config
 from tracker import advisory
 from tracker import create_app
 from tracker import db as flask_db
@@ -34,6 +35,8 @@ DEFAULT_ADVISORY_ID = advisory_get_label()
 DEFAULT_USERNAME = 'cyberwehr12345678'
 ERROR_LOGIN_REQUIRED = 'Please log in to access this page.'
 ERROR_INVALID_CHOICE = 'Not a valid choice'
+
+config.TRACKER_ISSUES_PER_PAGE = 25
 
 
 @pytest.fixture(scope="session")

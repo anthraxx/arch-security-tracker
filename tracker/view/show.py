@@ -627,7 +627,7 @@ def show_advisory_log(advisory_id, path=None):
 
 # TODO: define permission to view this
 @tracker.route('/log', defaults={'page': 1}, methods=['GET'])
-@tracker.route('/log/page/<int:page>', methods=['GET'])
+@tracker.route('/log/page/<int(min=1):page>', methods=['GET'])
 def show_log(page=1):
     Transaction = versioning_manager.transaction_cls
     VersionClassCVE = version_class(CVE)

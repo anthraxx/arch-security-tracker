@@ -5,6 +5,7 @@ from flask import render_template
 from sqlalchemy import and_
 from sqlalchemy import func
 
+from config import TRACKER_ISSUES_PER_PAGE
 from tracker import db
 from tracker import tracker
 from tracker.model import CVE
@@ -31,10 +32,12 @@ def get_index_data(only_vulnerable=False, only_in_repo=True):
     if only_in_repo:
         select = select.join(Package, Package.name == CVEGroupPackage.pkgname)
 
-    entries = (select.group_by(CVEGroup.id).group_by(CVE.id)
-                     .order_by(CVEGroup.status.desc())
-                     .order_by(CVEGroup.changed.desc())).all()
+    return (select.group_by(CVEGroup.id).group_by(CVE.id)
+                  .order_by(CVEGroup.status.desc())
+                  .order_by(CVEGroup.changed.desc()))
 
+
+def group_entries(entries):
     groups = defaultdict(defaultdict)
     for group, cve, pkgs, advisories in entries:
         group_entry = groups.setdefault(group.id, {})
@@ -53,23 +56,28 @@ def get_index_data(only_vulnerable=False, only_in_repo=True):
     return groups
 
 
-@tracker.route('/', defaults={'path': '', 'only_vulnerable': True}, methods=['GET'])
-def index(only_vulnerable=True, path=None):
-    groups = get_index_data(only_vulnerable)
+@tracker.route('/', defaults={'path': '', 'only_vulnerable': True, 'page': 1}, methods=['GET'])
+@tracker.route('/page/<int(min=1):page>', defaults={'path': '', 'only_vulnerable': True}, methods=['GET'])
+def index(only_vulnerable=True, path=None, page=1):
+    entries = get_index_data(only_vulnerable).paginate(page, TRACKER_ISSUES_PER_PAGE, True)
+    groups = group_entries(entries.items)
     return render_template('index.html',
                            title='Issues' if not only_vulnerable else 'Vulnerable issues',
-                           entries=groups,
+                           entries=entries,
+                           groups=groups,
                            only_vulnerable=only_vulnerable)
 
 
 @tracker.route('/<regex("issues(/(open|vulnerable))?"):path>', defaults={'path': 'issues'}, methods=['GET'])
-def index_vulnerable(path=None):
-    return index(only_vulnerable=True)
+@tracker.route('/<regex("issues(/(open|vulnerable))?"):path>/page/<int(min=1):page>', defaults={'path': 'issues'}, methods=['GET'])
+def index_vulnerable(path=None, page=1):
+    return index(only_vulnerable=True, path=path, page=page)
 
 
-@tracker.route('/<regex("(issues/)?all"):path>', defaults={'path': 'issues/all'}, methods=['GET'])
-def index_all(path=None):
-    return index(only_vulnerable=False)
+@tracker.route('/<regex("(issues/)?all"):path>', defaults={'path': 'issues/all', 'page': 1}, methods=['GET'])
+@tracker.route('/<regex("(issues/)?all"):path>/page/<int(min=1):page>', defaults={'path': 'issues/all'}, methods=['GET'])
+def index_all(path=None, page=1):
+    return index(only_vulnerable=False, path=path, page=page)
 
 
 # TODO: temporarily keep /json this way until tools adopted new endpoint
@@ -78,8 +86,9 @@ def index_all(path=None):
 @json_response
 def index_json(only_vulnerable=False, path=None):
     entries = get_index_data(only_vulnerable)
+    groups = group_entries(entries.all())
     json_data = []
-    for entry in entries:
+    for entry in groups:
         group = entry['group']
         types = list(set([cve.issue_type for cve in entry['issues']]))
 

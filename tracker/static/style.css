@@ -91,6 +91,7 @@ select {
 	list-style: outside none none;
 	margin: -0.5em 0;
 	padding: 0;
+	overflow: hidden;
 }
 
 .navbar li {
@@ -659,4 +660,11 @@ table.diff tr td:first-child {
 
 .pagination {
 	margin: 1em 0;
+}
+
+#issue_top_pagination,
+#issue_bottom_pagination {
+    margin: 0 0;
+    display: inline;
+    float: right;
 }

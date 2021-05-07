@@ -118,9 +118,9 @@
 							</table>
 {%- endmacro -%}
 
-{%- macro render_pagination(pagination) -%}
+{%- macro render_pagination(pagination, style_id='') -%}
 	{%- if pagination.has_prev or pagination.has_next -%}
-			<div class=pagination>
+			<div class="pagination" id="{{ style_id }}">
 	{%- if pagination.has_prev %}
 				<a href="{{ url_for_page(pagination.page - 1) }}" accesskey="p">&laquo; prev</a>
 	{%- else %}

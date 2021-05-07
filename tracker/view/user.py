@@ -42,7 +42,7 @@ def edit_own_user_profile():
 
 # TODO: define permission to view this
 @tracker.route('/user/<regex("{}"):username>/log'.format(username_regex[1:-1]), defaults={'page': 1}, methods=['GET'])
-@tracker.route('/user/<regex("{}"):username>/log/page/<int:page>'.format(username_regex[1:-1]), methods=['GET'])
+@tracker.route('/user/<regex("{}"):username>/log/page/<int(min=1):page>'.format(username_regex[1:-1]), methods=['GET'])
 @login_required
 def show_user_log(username, page=1):
     MAX_ENTRIES_PER_PAGE = 10

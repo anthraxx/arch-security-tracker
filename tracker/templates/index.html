@@ -1,11 +1,12 @@
 {%- extends "base.html" -%}
-{%- from "_formhelpers.html" import nullable_value, colorize_severity, colorize_status, bug_ticket -%}
+{%- from "_formhelpers.html" import nullable_value, colorize_severity, colorize_status, bug_ticket, render_pagination -%}
 {% block content %}
 			<h1>Issues</h1>
 			<div class="navbar">
 				<ul>
 					<li>{%- if not only_vulnerable %}<a href="{{ url_for('tracker.index_vulnerable') }}">vulnerable</a>{%- else %}<b>vulnerable</b>{%- endif %}</li>
 					<li>{%- if only_vulnerable %}<a href="{{ url_for('tracker.index_all') }}">all</a>{%- else %}<b>all</b>{%- endif %}</li>
+					<li>{{ render_pagination(entries, 'issue_top_pagination') }}</li>
 				</ul>
 			</div>
 			<div class="scroll-x">
@@ -24,7 +25,7 @@
 						</tr>
 					</thead>
 					<tbody>
-					{%- for entry in entries %}
+					{%- for entry in groups %}
 						<tr>
 							<td><a href="/{{ entry.group.name }}">{{ entry.group.name }}</a></td>
 							<td>
@@ -55,5 +56,6 @@
 					{%- endfor %}
 					</tbody>
 				</table>
+				{{ render_pagination(entries, 'issue_bottom_pagination') }}
 			</div>
 {%- endblock %}
