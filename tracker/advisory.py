@@ -89,11 +89,13 @@ def advisory_escape_html(advisory):
 
 
 def advisory_extend_html(advisory, issues, package):
-    advisory = sub('({}) '.format(escape(package.pkgname)), '<a href="/package/{0}" rel="noopener">\\g<1></a> '.format(package.pkgname), advisory, flags=IGNORECASE)
-    advisory = sub(' ({})'.format(escape(package.pkgname)), ' <a href="/package/{0}" rel="noopener">\\g<1></a>'.format(package.pkgname), advisory, flags=IGNORECASE)
-    advisory = sub(';({})'.format(escape(package.pkgname)), ';<a href="/package/{0}" rel="noopener">\\g<1></a>'.format(package.pkgname), advisory, flags=IGNORECASE)
-    advisory = sub('"({})'.format(escape(package.pkgname)), '"<a href="/package/{0}" rel="noopener">\\g<1></a>'.format(package.pkgname), advisory, flags=IGNORECASE)
-    return advisory
+    escaped_name = escape(package.pkgname)
+    regex = '|'.join([
+        fr"(?<=[^\./])({escaped_name})(?=[\.])",
+        fr"(?<=[\.])({escaped_name})(?=[^\.])",
+        fr"(?<=[^\w>.\/])({escaped_name})(?=[^\w<.])"
+    ])
+    return sub(regex, f'<a href="/package/{package.pkgname}" rel="noopener">\\1\\2\\3</a>', advisory, flags=IGNORECASE)
 
 
 def advisory_extend_model_from_advisory_text(advisory):
