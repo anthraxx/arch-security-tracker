@@ -1,5 +1,6 @@
 from types import MethodType
 
+from authlib.integrations.flask_client import OAuth
 from flask import Blueprint
 from flask import Flask
 from flask_login import LoginManager
@@ -23,6 +24,10 @@ from config import SQLITE_JOURNAL_MODE
 from config import SQLITE_MMAP_SIZE
 from config import SQLITE_SYNCHRONOUS
 from config import SQLITE_TEMP_STORE
+from config import SSO_CLIENT_ID
+from config import SSO_CLIENT_SECRET
+from config import SSO_ENABLED
+from config import SSO_METADATA_URL
 from config import atom_feeds
 
 
@@ -83,6 +88,7 @@ make_versioned(plugins=[FlaskPlugin(), PropertyModTrackerPlugin()])
 migrate = Migrate(db=db, directory=SQLALCHEMY_MIGRATE_REPO)
 talisman = Talisman()
 login_manager = LoginManager()
+oauth = OAuth()
 tracker = Blueprint('tracker', __name__)
 
 
@@ -108,6 +114,19 @@ def create_app(script_info=None):
     app.url_map.converters['regex'] = RegexConverter
     app.jinja_env.globals['ATOM_FEEDS'] = atom_feeds
 
+    if SSO_ENABLED:
+        app.config["IDP_CLIENT_ID"] = SSO_CLIENT_ID
+        app.config["IDP_CLIENT_SECRET"] = SSO_CLIENT_SECRET
+
+        oauth.init_app(app)
+        oauth.register(
+            name='idp',
+            server_metadata_url= SSO_METADATA_URL,
+            client_kwargs={
+                'scope': 'openid email'
+            }
+        )
+
     from tracker.view.error import error_handlers
     for error_handler in error_handlers:
         app.register_error_handler(error_handler['code_or_exception'], error_handler['func'])
@@ -127,6 +146,6 @@ def create_app(script_info=None):
         from tracker.model import User
         return dict(db=db, migrate=migrate, talisman=talisman, login_manager=login_manager, tracker=tracker,
                     Advisory=Advisory, CVE=CVE, CVEGroup=CVEGroup, CVEGroupEntry=CVEGroupEntry,
-                    CVEGroupPackage=CVEGroupPackage, User=User, Package=Package)
+                    CVEGroupPackage=CVEGroupPackage, User=User, Package=Package, oauth=oauth)
 
     return app

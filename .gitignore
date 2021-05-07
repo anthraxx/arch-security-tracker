@@ -7,3 +7,5 @@ tracker.db*
 .pytest_cache/
 test/coverage
 Makefile.local
+.vscode/
+.python-version

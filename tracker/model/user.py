@@ -22,6 +22,7 @@ class User(db.Model):
     token = db.Column(db.String(TOKEN_LENGTH), index=True, unique=True, nullable=True)
     role = db.Column(UserRole.as_type(), nullable=False, default=UserRole.reporter)
     active = db.Column(db.Boolean(), nullable=False, default=True)
+    idp_id = db.Column(db.String(40), nullable=True, default=None)
 
     is_authenticated = False
     is_anonymous = False

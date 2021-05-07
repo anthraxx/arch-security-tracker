@@ -2,7 +2,6 @@ from flask import flash
 from flask import redirect
 from flask import render_template
 from flask_login import current_user
-from flask_login import login_required
 from sqlalchemy_continuum import version_class
 from sqlalchemy_continuum import versioning_manager
 
@@ -18,6 +17,8 @@ from tracker.model import User
 from tracker.model.user import username_regex
 from tracker.user import hash_password
 from tracker.user import random_string
+
+from ..user import login_required
 
 
 @tracker.route('/profile', methods=['GET', 'POST'])

@@ -11,3 +11,4 @@ pyalpm
 SQLAlchemy-Continuum
 feedgen
 pytz
+authlib

@@ -133,7 +133,7 @@ def logged_in(func=None, role=UserRole.administrator, username=DEFAULT_USERNAME,
 
 
 def create_user(func=None, username=DEFAULT_USERNAME, password=None, role=UserRole.reporter,
-                email=None, salt=None, active=True):
+                email=None, salt=None, active=True, idp_id=None):
     def decorator(func):
         @wraps(func)
         def wrapper(db, *args, **kwargs):
@@ -145,6 +145,7 @@ def create_user(func=None, username=DEFAULT_USERNAME, password=None, role=UserRo
             user.email = email if email else '{}@cyber.cyber'.format(username)
             user.salt = salt if salt else random_string()
             user.password = hash_password(user.password, user.salt)
+            user.idp_id = idp_id
 
             db.session.add(user)
             db.session.commit()

@@ -2,14 +2,18 @@ from base64 import b85encode
 from functools import wraps
 from os import urandom
 
+from flask import redirect
+from flask import url_for
 from flask_login import current_user
-from flask_login import login_required
+from flask_login import login_required as flask_login_required
 from scrypt import hash as shash
 from sqlalchemy.exc import IntegrityError
 
+from config import SSO_ENABLED
 from config import TRACKER_PASSWORD_LENGTH_MIN
 from tracker import db
 from tracker import login_manager
+from tracker import oauth
 from tracker.model.user import Guest
 from tracker.model.user import User
 from tracker.model.user import UserRole
@@ -38,6 +42,17 @@ def load_user(session_token):
     user.is_authenticated = True
     return user
 
+def login_required(func):
+    if SSO_ENABLED:
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            if not current_user.is_authenticated:
+                redirect_url = url_for('tracker.sso_auth', _external=True)
+                return oauth.idp.authorize_redirect(redirect_url)
+            return func(*args, **kwargs)
+        return wrapped 
+    else:
+        return flask_login_required(func)
 
 def permission_required(permission):
     def decorator(func):

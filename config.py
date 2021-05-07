@@ -61,3 +61,14 @@ SESSION_COOKIE_SAMESITE = config_flask['session_cookie_samesite']
 
 config_pacman = config['pacman']
 PACMAN_HANDLE_CACHE_TIME = config_pacman.getint('handle_cache_time')
+
+config_sso = config['sso']
+SSO_ENABLED = config_sso.getboolean('enabled')
+SSO_CLIENT_SECRET = config_sso.get('client_secret')
+SSO_CLIENT_ID = config_sso.get('client_id')
+SSO_NEW_USER_DEFAULT_PASSWORD = config_sso.get('new_user_default_password')
+SSO_ADMINISTRATOR_GROUP = config_sso.get('administrator_group')
+SSO_SECURITY_TEAM_GROUP = config_sso.get('security_team_group')
+SSO_REPORTER_GROUP = config_sso.get('reporter_group')
+SSO_GUEST_GROUP = config_sso.get('guest_group')
+SSO_METADATA_URL = config_sso.get('metadata_url')

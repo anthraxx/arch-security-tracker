@@ -23,6 +23,7 @@ archlinux:
     - python-pytz
     - python-requests
     - python-scrypt
+    - python-authlib
     - pyalpm
     - sqlite
   script:
